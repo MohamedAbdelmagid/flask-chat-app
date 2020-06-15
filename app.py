@@ -1,7 +1,7 @@
 from flask import Flask, render_template
-from forms import RegistartionForm
 from flask_sqlalchemy import SQLAlchemy
 
+from forms import *
 from models import *
 
 app = Flask(__name__)
@@ -17,11 +17,6 @@ def index():
 	if form.validate_on_submit():
 		username = form.username.data
 		password = form.password.data
-
-		# Check if there is a user with this name in the database
-		user = User.query.filter_by(username=username).first()
-		if user:
-			return "This name is already used by someone else !!"
 
 		# add user to database 
 		user = User(username=username, password=password)
