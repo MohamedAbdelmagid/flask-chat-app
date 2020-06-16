@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 
 from forms import *
 from models import *
@@ -10,6 +11,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://jrmjgfixqxbbuz:0f35893ac0396
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+login = LoginManager(app)
+login.init_app(app)
+
+@login.user_loader
+def load_user(id):
+	return User.query.get(int(id))
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -34,9 +42,21 @@ def index():
 def login():
 	form = LoginForm()
 	if form.validate_on_submit():
-		return f"{form.username.data} is logged in !!"
+		user = User.query.filter_by(username=form.username.data).first()
+		login_user(user)
+		return redirect(url_for('chat'))
 
 	return render_template('login.html', form=form)
+
+@app.route('/chat', methods=['GET', 'POST'])
+@login_required
+def chat():
+	return "Chat Room :)"
+
+@app.route('/logout', methods=['GET'])
+def logout():
+	logout_user()
+	return "User is logged out !!"
 
 
 if __name__ == "__main__":
